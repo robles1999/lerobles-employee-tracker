@@ -14,7 +14,7 @@ class EmployeeTrackerSystem {
         password: "LuisMySQL1",
         database: "employee_tracker_db",
       });
-      console.log(`Connected to the employee_tracker_db.`);
+      // console.log(`Connected to the employee_tracker_db.`);
       this.startApp();
     } catch (error) {
       console.log("Error connecting to the database: " + error.message);
@@ -23,7 +23,7 @@ class EmployeeTrackerSystem {
 
   // Menu prompt
   async startApp() {
-    console.log("Application started!");
+    // console.log("Application started!");
     try {
       // prompt user to select an action to perform
       const { action } = await inquirer.prompt({
@@ -38,7 +38,7 @@ class EmployeeTrackerSystem {
           "Add a role",
           "Add an employee",
           "Update an employee's role",
-          "Exit",
+          "Quit",
         ],
       });
 
@@ -65,7 +65,7 @@ class EmployeeTrackerSystem {
         case "Update an employee's role":
           await this.updateEmployeeRole();
           break;
-        case "Exit":
+        case "Quit":
           break;
       }
     } catch (error) {
@@ -87,7 +87,7 @@ class EmployeeTrackerSystem {
     }
   }
 
-  //:::::::::::::::::: VIEW ALL DEPARTMENTS ::::::::::::::::::
+  //!:::::::::::::::::: VIEW ALL DEPARTMENTS ::::::::::::::::::
   async viewAllDepartments() {
     // query the database for all departments
     const [rows] = await this.connection.query(
@@ -98,7 +98,7 @@ class EmployeeTrackerSystem {
     console.table(rows);
   }
 
-  //:::::::::::::::::::::: VIEW ALL ROLES ::::::::::::::::::::::
+  //!:::::::::::::::::::: VIEW ALL ROLES ::::::::::::::::::::::
   async viewAllRoles() {
     // query the database for all roles, including the corresponding department for each role
     const [rows] = await this.connection.query(`
@@ -111,7 +111,7 @@ class EmployeeTrackerSystem {
     console.table(rows);
   }
 
-  //:::::::::::::::::::: VIEW ALL EMPLOYEES ::::::::::::::::::::
+  //!::::::::::::::::: VIEW ALL EMPLOYEES ::::::::::::::::::
   async viewAllEmployees() {
     // query the database for all roles, including the corresponding department for each role
     const [rows] = await this.connection
@@ -126,7 +126,7 @@ class EmployeeTrackerSystem {
     console.table(rows);
   }
 
-  //:::::::::::::::::: ADD A DEPARTMENT ::::::::::::::::::
+  //!:::::::::::::::::: ADD A DEPARTMENT ::::::::::::::::::
   async addDepartment() {
     try {
       const answers = await inquirer.prompt([
@@ -151,7 +151,7 @@ class EmployeeTrackerSystem {
     }
   }
 
-  //:::::::::::::::::: ADD A ROLE ::::::::::::::::::
+  //!:::::::::::::::::: ADD A ROLE ::::::::::::::::::
   async addRole() {
     try {
       // Retrieve all the departments from the departments table
@@ -204,10 +204,9 @@ class EmployeeTrackerSystem {
     }
   }
 
-  //:::::::::::::::::: ADD AN EMPLOYEE ::::::::::::::::::
+  //!:::::::::::::::::: ADD AN EMPLOYEE ::::::::::::::::::
   async addEmployee() {
-    try
-    {
+    try {
       // Retrieve all the departments from the departments table
       // to make the list available to the inquirer prompt
       const departments = await this.connection.query(
@@ -218,7 +217,7 @@ class EmployeeTrackerSystem {
         name: department.name,
         value: department.id,
       }));
-      
+
       // Retrieve all the roles from the roles table
       // to make the list available to the inquirer prompt
       const roles = await this.connection.query(`SELECT * FROM roles`);
@@ -303,6 +302,54 @@ class EmployeeTrackerSystem {
       );
     } catch (error) {
       console.log("Error adding employee: " + error.message);
+    }
+  }
+
+  //!::::::::::::::: UPDATE AN EMPLOYEE ROLE ::::::::::::::::::
+  async updateEmployeeRole() {
+    try {
+      // Retrieve all the employees from the employees table
+      // to make the list available to the inquirer prompt
+      const employees = await this.connection.query(`SELECT * FROM employees`);
+
+      const employeeChoices = employees[0].map((employee) => ({
+        name: `${employee.first_name} ${employee.last_name}`,
+        value: employee.id,
+      }));
+
+      // Retrieve all the roles from the roles table
+      // to make the list available to the inquirer prompt
+      const roles = await this.connection.query(`SELECT * FROM roles`);
+
+      const roleChoices = roles[0].map((role) => ({
+        name: role.title,
+        value: role.id,
+      }));
+
+      const answers = await inquirer.prompt([
+        {
+          type: "list",
+          name: "employeeId",
+          message: "Choose the employee to update:",
+          choices: employeeChoices,
+        },
+        {
+          type: "list",
+          name: "roleId",
+          message: "Choose the new role for the employee:",
+          choices: roleChoices,
+        },
+      ]);
+
+      // Update the employee's role in the employees table
+      const [result] = await this.connection.query(
+        `UPDATE employees SET role_id = ? WHERE id = ?`,
+        [answers.roleId, answers.employeeId]
+      );
+
+      console.log(`${result.affectedRows} employee updated.`);
+    } catch (error) {
+      console.log("Error updating employee role: " + error.message);
     }
   }
 }
