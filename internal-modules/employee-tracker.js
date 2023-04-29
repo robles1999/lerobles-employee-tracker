@@ -66,7 +66,6 @@ class EmployeeTrackerSystem {
           await this.updateEmployeeRole();
           break;
         case "Exit":
-          console.log("Thank you for using our employee management system!");
           break;
       }
     } catch (error) {
@@ -79,10 +78,11 @@ class EmployeeTrackerSystem {
         message: "Do you want to return to the main menu?",
         default: true,
       });
+
       if (returnToMainMenu) {
         await this.startApp();
       } else {
-        console.log("Thank you for using our employee management system!");
+        console.log("Thank you for using our employee tracker system!");
       }
     }
   }
@@ -152,17 +152,159 @@ class EmployeeTrackerSystem {
   }
 
   //:::::::::::::::::: ADD A ROLE ::::::::::::::::::
-  //   INSERT INTO roles (title)
-  // VALUES ("Sales Lead"),
-  //        ("Salesperson"),n
-    
-  //        ("Lead Engineer"),
-  //        ("Legal Team Lead");
-  //        ("Lawyer");
-  //:::::::::::::::::: ADD A EMPLOYEE ::::::::::::::::::
-  //   INSERT INTO roles (first_name, last_name, role_id, manager_id)
-  // VALUES ("John", "Doe", 1, ),
-  //        ("Mike", "Chan", 2, 1);
+  async addRole() {
+    try {
+      // Retrieve all the departments from the departments table
+      // to make the list available to the inquirer prompt
+      const departments = await this.connection.query(
+        `select * from departments`
+      );
+
+      const departmentChoices = departments[0].map((department) => ({
+        name: department.name,
+        value: department.id,
+      }));
+
+      console.log("Department Choices:", departmentChoices);
+
+      const answers = await inquirer.prompt([
+        {
+          type: "input",
+          name: "title",
+          message: "Enter the title of the role:",
+        },
+        {
+          type: "input",
+          name: "salary",
+          message: "Enter the salary of the new role:",
+        },
+        {
+          type: "list",
+          name: "department",
+          message: "Choose the department for the new role:",
+          choices: departmentChoices,
+        },
+      ]);
+
+      this.connection.query(
+        `INSERT INTO roles SET ?`,
+        {
+          title: answers.title,
+          salary: answers.salary,
+          department_id: answers.department,
+        },
+        (err, res) => {
+          if (err) throw err;
+          console.log(`${res.affectedRows} role added.`);
+          this.startApp();
+        }
+      );
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  //:::::::::::::::::: ADD AN EMPLOYEE ::::::::::::::::::
+  async addEmployee() {
+    try
+    {
+      // Retrieve all the departments from the departments table
+      // to make the list available to the inquirer prompt
+      const departments = await this.connection.query(
+        `select * from departments`
+      );
+
+      const departmentChoices = departments[0].map((department) => ({
+        name: department.name,
+        value: department.id,
+      }));
+      
+      // Retrieve all the roles from the roles table
+      // to make the list available to the inquirer prompt
+      const roles = await this.connection.query(`SELECT * FROM roles`);
+      const roleChoices = roles[0].map((role) => ({
+        name: role.title,
+        value: role.id,
+      }));
+      console.log("Role Choices:", roleChoices);
+
+      // Ask whether the employee is a manager or not
+      const { isManager } = await inquirer.prompt({
+        type: "confirm",
+        name: "isManager",
+        message: "Is this new employee going to hold a managers position?",
+      });
+
+      let managerChoices = [];
+
+      if (!isManager) {
+        // Retrieve all the employees from the employees table
+        // to make the list of managers available to the inquirer prompt
+        // If the employee has a manager_id of NULL that means the
+        // employee role is MANAGER.
+        const employees = await this.connection.query(
+          `SELECT * FROM employees`
+        );
+        managerChoices = employees[0]
+          .filter((employee) => employee.manager_id === null) // Only include employees who are managers
+          .map((manager) => ({
+            name: `${manager.first_name} ${manager.last_name}`,
+            value: manager.id,
+          }));
+        console.log("Manager Choices:", managerChoices);
+      }
+
+      const answers = await inquirer.prompt([
+        {
+          type: "input",
+          name: "first_name",
+          message: "Enter the first name of the employee:",
+        },
+        {
+          type: "input",
+          name: "last_name",
+          message: "Enter the last name of the employee:",
+        },
+        {
+          type: "list",
+          name: "role",
+          message: "Choose the employee's role:",
+          choices: roleChoices,
+        },
+        {
+          type: "list",
+          name: "department",
+          message: "Choose the department for the new role:",
+          choices: departmentChoices,
+        },
+        {
+          type: "list",
+          name: "manager_id",
+          message: "Choose the employee's manager:",
+          choices: managerChoices,
+          when: !isManager, // Only ask this question if the employee is not a manager
+        },
+      ]);
+
+      // Insert the new employee into the employees table
+      const [result] = await this.connection.query(
+        `INSERT INTO employees (first_name, last_name, role_id, manager_id)
+    VALUES (?, ?, ?, ?)`,
+        [
+          answers.first_name,
+          answers.last_name,
+          answers.role,
+          answers.manager_id || null,
+        ]
+      );
+
+      console.log(
+        `Added employee ${answers.first_name} ${answers.last_name} with ID ${result.insertId}.`
+      );
+    } catch (error) {
+      console.log("Error adding employee: " + error.message);
+    }
+  }
 }
 
 module.exports = EmployeeTrackerSystem;
