@@ -1,5 +1,8 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql2/promise");
+const path = require("path");
+const art = require(path.join(__dirname, "assets", "ascii.js"));
+const fs = require("fs");
 
 class EmployeeTrackerSystem {
   constructor() {
@@ -26,6 +29,13 @@ class EmployeeTrackerSystem {
     // console.log("Application started!");
     try {
       // prompt user to select an action to perform
+      // Read the contents of the .txt file
+      // const fileContent = fs.readFileSync("../assets/ascii.js", "utf8");
+
+      // Display the ASCII codes above the inquirer prompts
+      // console.log("ASCII codes:");
+      console.log("Art", art);
+
       const { action } = await inquirer.prompt({
         type: "list",
         name: "action",
