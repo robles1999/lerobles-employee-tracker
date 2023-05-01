@@ -1,4 +1,6 @@
 .dotenv
+.env
+.DS_store
 # Logs
 logs
 *.log
