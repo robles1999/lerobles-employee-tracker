@@ -1,10 +1,13 @@
 # Employee Tracker
 
-
 ## Description
+
+![Employee Tracker Screenshot](./assets/images/main-menu.jpg)
+
 This is a command-line application that allows you to manage a company's employee database, using Node.js, Inquirer, and MySQL.
 
 ## Usage
+
 When you start the application, you will be presented with the following options:
 
 - View all departments
@@ -27,4 +30,5 @@ If you choose to update an employee role, you will be prompted to select an empl
 If you choose to Quit, the application will end.
 
 ## Demo
+
 You can watch a video demonstration of the application here: (insert link)

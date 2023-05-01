@@ -1,3 +1,4 @@
+.dotenv
 # Logs
 logs
 *.log

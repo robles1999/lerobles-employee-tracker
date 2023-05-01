@@ -1,8 +1,7 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql2/promise");
-const path = require("path");
-const art = require(path.join(__dirname, "assets", "ascii.js"));
-const fs = require("fs");
+const art = require("../assets/art/ascii");
+require("dotenv").config();
 
 class EmployeeTrackerSystem {
   constructor() {
@@ -13,29 +12,21 @@ class EmployeeTrackerSystem {
     try {
       this.connection = await mysql.createConnection({
         host: "localhost",
-        user: "root",
-        password: "LuisMySQL1",
-        database: "employee_tracker_db",
+        database: process.env.DB_NAME,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
       });
-      // console.log(`Connected to the employee_tracker_db.`);
       this.startApp();
     } catch (error) {
       console.log("Error connecting to the database: " + error.message);
     }
   }
 
-  // Menu prompt
   async startApp() {
-    // console.log("Application started!");
     try {
-      // prompt user to select an action to perform
-      // Read the contents of the .txt file
-      // const fileContent = fs.readFileSync("../assets/ascii.js", "utf8");
+      console.log(art()); // Show ascii art on top of menu
 
-      // Display the ASCII codes above the inquirer prompts
-      // console.log("ASCII codes:");
-      console.log("Art", art);
-
+      // Prompt user to select an action to perform
       const { action } = await inquirer.prompt({
         type: "list",
         name: "action",
@@ -52,7 +43,7 @@ class EmployeeTrackerSystem {
         ],
       });
 
-      // call the appropriate function based on user's choice
+      // Call the appropriate function based on user's choice
       switch (action) {
         case "View all departments":
           await this.viewAllDepartments();
@@ -81,7 +72,7 @@ class EmployeeTrackerSystem {
     } catch (error) {
       console.log("Error performing action: " + error.message);
     } finally {
-      // prompt user to return to the main menu or exit the application
+      // Prompt user to return to the main menu or exit the application
       const { returnToMainMenu } = await inquirer.prompt({
         type: "confirm",
         name: "returnToMainMenu",
@@ -99,31 +90,31 @@ class EmployeeTrackerSystem {
 
   //!:::::::::::::::::: VIEW ALL DEPARTMENTS ::::::::::::::::::
   async viewAllDepartments() {
-    // query the database for all departments
+    // Query the database for all departments
     const [rows] = await this.connection.query(
       "SELECT id, name FROM departments"
     );
 
-    // print the departments in a formatted table
+    // Console log the departments in a formatted table
     console.table(rows);
   }
 
   //!:::::::::::::::::::: VIEW ALL ROLES ::::::::::::::::::::::
   async viewAllRoles() {
-    // query the database for all roles, including the corresponding department for each role
+    // Query the database for all roles, including the corresponding department for each role
     const [rows] = await this.connection.query(`
       SELECT roles.id, roles.title, roles.salary, departments.name AS department
       FROM roles
       LEFT JOIN departments ON roles.department_id = departments.id
     `);
 
-    // print the roles in a formatted table
+    // Console log the roles in a formatted table
     console.table(rows);
   }
 
   //!::::::::::::::::: VIEW ALL EMPLOYEES ::::::::::::::::::
   async viewAllEmployees() {
-    // query the database for all roles, including the corresponding department for each role
+    // Query the database for all roles, including the corresponding department for each role
     const [rows] = await this.connection
       .query(`SELECT employees.id, employees.first_name, employees.last_name, roles.title, departments.name AS department, roles.salary, CONCAT(manager.first_name, ' ', manager.last_name) AS manager
     FROM employees
@@ -132,7 +123,7 @@ class EmployeeTrackerSystem {
     LEFT JOIN employees AS manager ON employees.manager_id = manager.id
   `);
 
-    // print the roles in a formatted table
+    // Print the roles in a formatted table
     console.table(rows);
   }
 
@@ -235,7 +226,7 @@ class EmployeeTrackerSystem {
         name: role.title,
         value: role.id,
       }));
-      console.log("Role Choices:", roleChoices);
+      // console.log("Role Choices:", roleChoices);
 
       // Ask whether the employee is a manager or not
       const { isManager } = await inquirer.prompt({
@@ -287,11 +278,12 @@ class EmployeeTrackerSystem {
           choices: departmentChoices,
         },
         {
+          // Only ask this question if the employee is not a manager
           type: "list",
           name: "manager_id",
           message: "Choose the employee's manager:",
           choices: managerChoices,
-          when: !isManager, // Only ask this question if the employee is not a manager
+          when: !isManager,
         },
       ]);
 

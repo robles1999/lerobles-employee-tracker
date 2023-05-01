@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/robles1999/lerobles-employee-tracker#readme",
   "dependencies": {
+    "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "inquirer": "^8.2.4",
     "mysql2": "^3.2.4"
