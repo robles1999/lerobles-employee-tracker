@@ -166,8 +166,6 @@ class EmployeeTrackerSystem {
         value: department.id,
       }));
 
-      console.log("Department Choices:", departmentChoices);
-
       const answers = await inquirer.prompt([
         {
           type: "input",
@@ -226,7 +224,6 @@ class EmployeeTrackerSystem {
         name: role.title,
         value: role.id,
       }));
-      // console.log("Role Choices:", roleChoices);
 
       // Ask whether the employee is a manager or not
       const { isManager } = await inquirer.prompt({
@@ -251,7 +248,6 @@ class EmployeeTrackerSystem {
             name: `${manager.first_name} ${manager.last_name}`,
             value: manager.id,
           }));
-        console.log("Manager Choices:", managerChoices);
       }
 
       const answers = await inquirer.prompt([

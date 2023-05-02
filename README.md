@@ -31,4 +31,4 @@ If you choose to Quit, the application will end.
 
 ## Demo
 
-You can watch a video demonstration of the application here: (insert link)
+[Video demonstration](https://drive.google.com/file/d/1_7u7lzDd4U4VlS3q7M4u3tlvxIZzp6ay/view)
